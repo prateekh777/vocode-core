@@ -188,7 +188,8 @@ def handle_start_conversation():
         
         synthesizer_config = ElevenLabsSynthesizerConfig(
             api_key=elevenlabs_api_key,
-            voice_id=elevenlabs_voice_id
+            voice_id=elevenlabs_voice_id,
+            optimize_streaming_latency=2  # Add this parameter to optimize latency
         )
             
         synthesizer = ElevenLabsSynthesizer(
@@ -202,7 +203,11 @@ def handle_start_conversation():
         transcriber_config = TranscriberConfig(
             model="whisper-1",
             provider="openai",
-            openai_api_key=openai_api_key
+            openai_api_key=openai_api_key,
+            endpointing_config={
+                "type": "time_based",
+                "time_cutoff_seconds": 0.5
+            }
         )
         
         transcriber = BaseTranscriber(
