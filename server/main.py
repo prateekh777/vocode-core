@@ -54,10 +54,12 @@ allowed_origins = ["http://localhost:3000", "http://192.168.178.85:3000", "https
 @app.after_request
 def after_request(response):
     origin = request.headers.get('Origin')
-    if origin and (origin in allowed_origins or '*' in allowed_origins):
-        response.headers.add('Access-Control-Allow-Origin', origin)
-    else:
-        response.headers.add('Access-Control-Allow-Origin', '*')
+    # Only add the header if it's not already present
+    if 'Access-Control-Allow-Origin' not in response.headers:
+        if origin and (origin in allowed_origins or '*' in allowed_origins):
+            response.headers.add('Access-Control-Allow-Origin', origin)
+        else:
+            response.headers.add('Access-Control-Allow-Origin', '*')
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
     return response
@@ -155,13 +157,17 @@ def handle_start_conversation():
             logger.info("Created new event loop for thread")
         
         # Initialize conversation components
+        from vocode.streaming.agent.chat_gpt_agent import ChatGPTAgentConfig
+        
+        agent_config = ChatGPTAgentConfig(
+            initial_message="Hello! How can I help you today?",
+            model_name="gpt-3.5-turbo",
+            openai_api_key=openai_api_key,
+            end_conversation_on_goodbye=True
+        )
+        
         agent = ChatGPTAgent(
-            agent_config={
-                "initial_message": "Hello! How can I help you today?",
-                "model_name": "gpt-3.5-turbo",
-                "openai_api_key": openai_api_key,
-                "end_conversation_on_goodbye": True
-            }
+            agent_config=agent_config
         )
         logger.info("ChatGPT agent initialized")
         
@@ -173,22 +179,30 @@ def handle_start_conversation():
             logger.error("ElevenLabs API key or voice ID not found")
             emit('error', {'message': 'ElevenLabs configuration missing'})
             return
+        
+        from vocode.streaming.synthesizer.eleven_labs_synthesizer import ElevenLabsSynthesizerConfig
+        
+        synthesizer_config = ElevenLabsSynthesizerConfig(
+            api_key=elevenlabs_api_key,
+            voice_id=elevenlabs_voice_id
+        )
             
         synthesizer = ElevenLabsSynthesizer(
-            synthesizer_config={
-                "api_key": elevenlabs_api_key,
-                "voice_id": elevenlabs_voice_id
-            }
+            synthesizer_config=synthesizer_config
         )
         logger.info("ElevenLabs synthesizer initialized")
         
         # Using BaseTranscriber with OpenAI configuration
+        from vocode.streaming.transcriber.base_transcriber import TranscriberConfig
+        
+        transcriber_config = TranscriberConfig(
+            model="whisper-1",
+            provider="openai",
+            openai_api_key=openai_api_key
+        )
+        
         transcriber = BaseTranscriber(
-            transcriber_config={
-                "model": "whisper-1",
-                "provider": "openai",
-                "openai_api_key": openai_api_key
-            }
+            transcriber_config=transcriber_config
         )
         logger.info("Transcriber initialized")
         
