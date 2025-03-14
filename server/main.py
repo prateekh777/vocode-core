@@ -160,7 +160,11 @@ def handle_start_conversation():
         from vocode.streaming.agent.chat_gpt_agent import ChatGPTAgentConfig
         
         agent_config = ChatGPTAgentConfig(
-            initial_message="Hello! How can I help you today?",
+            prompt_preamble="You are a helpful voice assistant that has a conversation with the user.",
+            initial_message={
+                "role": "assistant",
+                "content": "Hello! How can I help you today?"
+            },
             model_name="gpt-3.5-turbo",
             openai_api_key=openai_api_key,
             end_conversation_on_goodbye=True
