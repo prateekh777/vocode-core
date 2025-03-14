@@ -46,18 +46,26 @@ logger.info("OpenAI client initialized")
 # Initialize Flask app
 app = Flask(__name__)
 
-# Add CORS middleware
+# Configure CORS to allow requests from your React app
+# Define allowed origins
+allowed_origins = ["http://localhost:3000", "http://192.168.178.85:3000", "https://vocode-core-kdqv.onrender.com"]
+
+# Add CORS middleware with dynamic origin handling
 @app.after_request
 def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
+    origin = request.headers.get('Origin')
+    if origin and (origin in allowed_origins or '*' in allowed_origins):
+        response.headers.add('Access-Control-Allow-Origin', origin)
+    else:
+        response.headers.add('Access-Control-Allow-Origin', '*')
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
     return response
 
-# Configure CORS to allow requests from your React app
+# Configure CORS with Flask-CORS
 CORS(app, resources={
     r"/*": {
-        "origins": ["http://localhost:3000", "http://192.168.178.85:3000", "https://vocode-core-kdqv.onrender.com", "*"],
+        "origins": allowed_origins,
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"]
     }
@@ -67,7 +75,7 @@ logger.info("CORS configured")
 # Configure SocketIO with CORS settings
 socketio = SocketIO(
     app, 
-    cors_allowed_origins=["http://localhost:3000", "http://192.168.178.85:3000", "https://vocode-core-kdqv.onrender.com", "*"],
+    cors_allowed_origins=allowed_origins,
     ping_timeout=5,     # Match client timeout
     ping_interval=10,   # Reduce ping interval
     async_mode='threading',  # Add threading mode for better performance
@@ -101,9 +109,7 @@ def test_cors():
     if request.method == 'OPTIONS':
         # Preflight request response
         response = jsonify({'status': 'ok'})
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-        response.headers.add('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+        # Don't add CORS headers here, they'll be added by the after_request function
         return response
     return jsonify({"status": "CORS test successful", "timestamp": str(datetime.datetime.now())})
 
@@ -112,9 +118,7 @@ def health_check():
     if request.method == 'OPTIONS':
         # Preflight request response
         response = jsonify({'status': 'ok'})
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-        response.headers.add('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+        # Don't add CORS headers here, they'll be added by the after_request function
         return response
     return jsonify({"status": "healthy"})
 
@@ -155,7 +159,8 @@ def handle_start_conversation():
             agent_config={
                 "initial_message": "Hello! How can I help you today?",
                 "model_name": "gpt-3.5-turbo",
-                "openai_api_key": openai_api_key
+                "openai_api_key": openai_api_key,
+                "end_conversation_on_goodbye": True
             }
         )
         logger.info("ChatGPT agent initialized")
