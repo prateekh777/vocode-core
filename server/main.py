@@ -13,18 +13,25 @@ import asyncio
 import nest_asyncio
 import numpy as np
 import datetime
-
-# Apply nest_asyncio to allow nested event loops
-nest_asyncio.apply()
+import sys
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, 
                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+# Print debug information
+logger.info("Python version: %s", sys.version)
+logger.info("Current working directory: %s", os.getcwd())
+logger.info("Directory contents: %s", os.listdir())
+
+# Apply nest_asyncio to allow nested event loops
+nest_asyncio.apply()
+
 # Load environment variables
 load_dotenv()
 logger.info("Environment variables loaded")
+logger.info("Available environment variables: %s", list(os.environ.keys()))
 
 # Configure OpenAI client
 openai_api_key = os.getenv("OPENAI_API_KEY")
@@ -86,6 +93,7 @@ socketio.on_event('*', log_event)
 
 @app.route('/', methods=['GET'])
 def index():
+    logger.info("Health check endpoint called")
     return jsonify({"status": "Vocode API Server is running", "version": "1.0.0"})
 
 @app.route('/test-cors', methods=['GET', 'OPTIONS'])
@@ -248,7 +256,13 @@ if __name__ == '__main__':
     # In production, we should use 0.0.0.0 to bind to all interfaces
     host = os.environ.get('HOST', '0.0.0.0')
     
-    logger.info(f"Starting server on port {port}")
+    logger.info(f"Starting server on host {host} and port {port}")
+    logger.info(f"Current directory: {os.getcwd()}")
+    logger.info(f"Available environment variables: {list(os.environ.keys())}")
     
-    # Use debug=False in production
-    socketio.run(app, host=host, port=port, debug=False, allow_unsafe_werkzeug=True)
+    try:
+        # Use debug=False in production
+        socketio.run(app, host=host, port=port, debug=False, allow_unsafe_werkzeug=True)
+    except Exception as e:
+        logger.error(f"Error starting server: {str(e)}", exc_info=True)
+        sys.exit(1)
