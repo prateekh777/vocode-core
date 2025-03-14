@@ -1,0 +1,14 @@
+{
+  "name": "vocode-app",
+  "version": "1.0.0",
+  "description": "Voice conversation app with Vocode",
+  "scripts": {
+    "start-backend": "cd server && python main.py",
+    "start-frontend": "cd client && npm start",
+    "start": "concurrently \"npm run start-backend\" \"npm run start-frontend\"",
+    "install-all": "cd client && npm install && cd ../server && pip install -r requirements.txt"
+  },
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  }
+} 
