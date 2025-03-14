@@ -4,6 +4,10 @@ import { io, Socket } from 'socket.io-client';
 
 // Get the server URL from environment variable or use localhost as fallback
 const SERVER_URL = process.env.REACT_APP_SERVER_URL || 'http://localhost:8000';
+console.log('Using server URL:', SERVER_URL);
+
+// Determine if we should use secure WebSockets based on the URL
+const useSecureWebsocket = SERVER_URL.startsWith('https');
 
 const ConversationInterface: React.FC = () => {
   const [isActive, setIsActive] = useState(false);
@@ -15,6 +19,7 @@ const ConversationInterface: React.FC = () => {
 
   useEffect(() => {
     // Test the connection to the server
+    console.log(`Testing connection to ${SERVER_URL}/test-cors`);
     fetch(`${SERVER_URL}/test-cors`)
       .then(response => response.json())
       .then(data => {
@@ -58,6 +63,7 @@ const ConversationInterface: React.FC = () => {
       setError(null);
 
       console.log(`Initializing Socket.IO connection to ${SERVER_URL}`);
+      console.log(`Using secure WebSocket: ${useSecureWebsocket}`);
       
       // Initialize Socket.IO connection with explicit configuration
       socketRef.current = io(SERVER_URL, {
@@ -67,9 +73,10 @@ const ConversationInterface: React.FC = () => {
         reconnectionAttempts: 5,
         reconnectionDelay: 2000,
         timeout: 5000,
-        withCredentials: true,
+        withCredentials: false, // Change to false for cross-domain requests to Render
         autoConnect: true,
-        path: '/socket.io'
+        path: '/socket.io',
+        secure: useSecureWebsocket
       });
 
       console.log('Socket.IO instance created:', socketRef.current);

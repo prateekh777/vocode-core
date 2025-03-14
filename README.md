@@ -165,3 +165,60 @@ if __name__ == "__main__":
 # 🌱 Documentation
 
 [docs.vocode.dev](https://docs.vocode.dev/open-source)
+
+# Vocode Voice API
+
+A voice conversation API built with Vocode, Flask, and Socket.IO.
+
+## Local Development
+
+1. Clone the repository
+2. Install dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
+3. Create a `.env` file based on `.env.example` and add your API keys
+4. Run the server:
+   ```
+   cd server
+   python main.py
+   ```
+5. The server will be available at http://localhost:8000
+
+## Deployment on Render
+
+1. Create a new Web Service on Render
+2. Connect your GitHub repository
+3. Configure the following settings:
+   - **Name**: vocode-core (or your preferred name)
+   - **Environment**: Python
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `cd server && python main.py`
+4. Add the following environment variables:
+   - `OPENAI_API_KEY`: Your OpenAI API key
+   - `ELEVENLABS_API_KEY`: Your ElevenLabs API key
+   - `ELEVENLABS_VOICE_ID`: Your ElevenLabs voice ID
+5. Deploy the service
+
+## Environment Variables
+
+- `OPENAI_API_KEY`: Your OpenAI API key (required)
+- `ELEVENLABS_API_KEY`: Your ElevenLabs API key (required)
+- `ELEVENLABS_VOICE_ID`: Your ElevenLabs voice ID (required)
+- `PORT`: Port to run the server on (default: 8000)
+- `HOST`: Host to bind to (default: 0.0.0.0)
+
+## API Endpoints
+
+- `GET /`: Server status
+- `GET /test-cors`: Test CORS configuration
+- `GET /api/health`: Health check endpoint
+
+## WebSocket Events
+
+- `connect`: Client connection
+- `start_conversation`: Start a new conversation
+- `audio_data`: Send audio data to the server
+- `audio_response`: Receive audio response from the server
+- `end_conversation`: End the conversation
+- `disconnect`: Client disconnection

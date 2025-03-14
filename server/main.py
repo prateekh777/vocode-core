@@ -50,7 +50,7 @@ def after_request(response):
 # Configure CORS to allow requests from your React app
 CORS(app, resources={
     r"/*": {
-        "origins": ["http://localhost:3000", "http://192.168.178.85:3000", "*"],
+        "origins": ["http://localhost:3000", "http://192.168.178.85:3000", "https://vocode-core-kdqv.onrender.com", "*"],
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"]
     }
@@ -60,7 +60,7 @@ logger.info("CORS configured")
 # Configure SocketIO with CORS settings
 socketio = SocketIO(
     app, 
-    cors_allowed_origins=["http://localhost:3000", "http://192.168.178.85:3000", "*"],
+    cors_allowed_origins=["http://localhost:3000", "http://192.168.178.85:3000", "https://vocode-core-kdqv.onrender.com", "*"],
     ping_timeout=5,     # Match client timeout
     ping_interval=10,   # Reduce ping interval
     async_mode='threading',  # Add threading mode for better performance
@@ -248,5 +248,7 @@ if __name__ == '__main__':
     # In production, we should use 0.0.0.0 to bind to all interfaces
     host = os.environ.get('HOST', '0.0.0.0')
     
-    logger.info(f'Starting server on {host}:{port}...')
-    socketio.run(app, debug=False, port=port, host=host, allow_unsafe_werkzeug=True)
+    logger.info(f"Starting server on port {port}")
+    
+    # Use debug=False in production
+    socketio.run(app, host=host, port=port, debug=False, allow_unsafe_werkzeug=True)
