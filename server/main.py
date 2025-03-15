@@ -48,7 +48,7 @@ app = Flask(__name__)
 
 # Configure CORS to allow requests from your React app
 # Define allowed origins
-allowed_origins = ["http://localhost:3000", "http://192.168.178.85:3000", "https://vocode-core-kdqv.onrender.com", "https://your-vercel-app.vercel.app"]
+allowed_origins = ["http://localhost:3000", "http://192.168.178.85:3000", "https://vocode-core-kdqv.onrender.com", "https://your-vercel-app.vercel.app", "https://vocode-core-frontend.vercel.app"]
 
 # Add CORS middleware with dynamic origin handling
 @app.after_request
